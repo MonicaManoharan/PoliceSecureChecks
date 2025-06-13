@@ -32,9 +32,6 @@ def run_custom_query(query):
     df = pd.read_sql_query(query, conn)
     return df
 
-
-# securecheck/queries.py
-
 QUERY_MAP = {
     #Vehicle-Based
     "Top 10 Vehicles in Drug-Related Stops": """
