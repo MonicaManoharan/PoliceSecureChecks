@@ -9,7 +9,7 @@ def run_Critical():
     # Preprocess datetime
     df['stop_date'] = pd.to_datetime(df['stop_date'], errors='coerce')
     df['stop_time'] = pd.to_datetime(df['stop_time'], format="%H:%M:%S", errors='coerce').dt.time
-    df['year'] = df['stop_date'].dt.year
+    df['year'] = df['stop_date'].dt.year.astype(int)
 
     df['month'] = df['stop_date'].dt.month
     df['hour'] = pd.to_datetime(df['stop_time'], errors='coerce').dt.hour
@@ -37,30 +37,21 @@ def run_Critical():
     st.title("\U0001F441\ufe0f SecureCheck - Critical Analysis")
 
     # Tabs for each question
-    q1, q2, q3, q4, q5 = st.tabs([
-        "1. Yearly Stops & Arrests",
-        "2. Violation by Age & Race",
-        "3. High Search & Arrest Violations",
-        "4. Demographics by Country",
-        "5. Top Arrest Rate Violations"
+    q1, q2, q3, q4 = st.tabs([
+        "1. Violation by Age & Race",
+        "2. High Search & Arrest Violations",
+        "3. Demographics by Country",
+        "4. Top Arrest Rate Violations"
     ])
 
     with q1:
-        data = df.groupby(['country_name', 'year']).agg(
-            total_stops=('is_arrested', 'count'),
-            total_arrests=('is_arrested', 'sum')
-        ).reset_index()
-        fig = px.line(data, y='year', x='total_stops', color='country_name', markers=True)
-        render_chart(fig, "Yearly Stops by Country")
-
-    with q2:
         df['age_group'] = pd.cut(df['driver_age'], bins=[0, 17, 25, 35, 50, 150],
                                 labels=["<18", "18-25", "26-35", "36-50", "50+"])
         data = df.groupby(['age_group', 'driver_race']).agg(count=('violation', 'count')).reset_index()
         fig = px.line(data, x='age_group', y='count', color='driver_race', markers=True)
         render_chart(fig, "Violations by Age Group and Race")
 
-    with q3:
+    with q2:
         stats = df.groupby('violation').agg(
             total=('search_conducted', 'count'),
             searches=('search_conducted', 'sum'),
@@ -74,7 +65,7 @@ def run_Critical():
         fig = px.line(top_stats, x='violation', y='arrest_rate', markers=True)
         render_chart(fig, "High Search and Arrest Rate Violations")
 
-    with q4:
+    with q3:
         demo = df.groupby('country_name').agg(
             male=('driver_gender', lambda x: (x == 'M').sum()),
             female=('driver_gender', lambda x: (x == 'F').sum())
@@ -83,13 +74,13 @@ def run_Critical():
         fig = px.bar(demo_melt, x='country_name', y='count', color='gender', barmode='group')
         render_chart(fig, "Driver Gender Distribution by Country")
 
-    with q5:
+    with q4:
         arrest_stats = df.groupby('violation').agg(
             total=('is_arrested', 'count'),
             arrests=('is_arrested', 'sum')
         ).reset_index()
         arrest_stats['arrest_rate'] = arrest_stats['arrests'] / arrest_stats['total'] * 100
-        top5 = arrest_stats.sort_values(by='arrest_rate', ascending=False).head(5)
+        top5 = arrest_stats.sort_values(by='arrest_rate', ascending=True).head(5)
         fig = px.bar(top5, x='arrest_rate', y='violation', orientation='h')
         render_chart(fig, "Top 5 Violations with Highest Arrest Rate")
 
