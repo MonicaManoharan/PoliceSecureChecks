@@ -12,18 +12,18 @@ conn = psycopg2.connect(
 cursor = conn.cursor()
 
 def insert_log(stop_date, stop_time, country, driver_gender, driver_age,
-               driver_race, search_conducted, search_type, stop_outcome,
+               driver_race, search_conducted, search_type, stop_outcome,is_arrested,
                stop_duration, is_drug_related, violation, vehicle_number):
 
     cursor.execute('''
         INSERT INTO police_checks_log (
             stop_date, stop_time, country_name, driver_gender, driver_age,
-            driver_race, search_conducted, search_type, stop_outcome,
+            driver_race, search_conducted, search_type, stop_outcome,is_arrested,
             stop_duration, drugs_related_stop, violation, vehicle_number
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s)
     ''', (
         stop_date, stop_time, country, driver_gender, driver_age,
-        driver_race, search_conducted, search_type, stop_outcome,
+        driver_race, search_conducted, search_type, stop_outcome,is_arrested,
         stop_duration, is_drug_related, violation, vehicle_number
     ))
     conn.commit()
@@ -31,6 +31,7 @@ def insert_log(stop_date, stop_time, country, driver_gender, driver_age,
 def run_custom_query(query):
     df = pd.read_sql_query(query, conn)
     return df
+
 
 QUERY_MAP = {
     #Vehicle-Based
@@ -84,7 +85,6 @@ QUERY_MAP = {
         WHERE driver_gender IS NOT NULL
         GROUP BY country_name, driver_gender
         ORDER BY country_name, stop_count DESC;
-
     """,
 
     "Race and Gender Combination with Highest Search Rate": """
