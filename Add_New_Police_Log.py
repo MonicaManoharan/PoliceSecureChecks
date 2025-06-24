@@ -19,7 +19,7 @@ def run_page():
             stop_date = st.date_input("Stop Date")
             stop_time = st.time_input("Stop Time")
             country = st.text_input("Country Name")
-            driver_gender = st.selectbox("Driver Gender", ["male", "female"])
+            driver_gender = st.selectbox("Driver Gender", ["Male", "Female"])
             driver_age = st.number_input("Driver Age", min_value=18, max_value=100)
             driver_race = st.text_input("Driver Race")
 
@@ -36,17 +36,32 @@ def run_page():
 
         if submitted:
             # Insert into DB
+            if driver_gender == "Male":
+                gender_label = "M"
+                pronoun = "him"
+            elif driver_gender == "Female":
+                gender_label = "F"
+                pronoun = "her"
+            else:
+                gender_label = "They"
+                pronoun = "them"
+
+            if stop_outcome == "Arrest":
+                is_arrested = "True"
+            else:
+                is_arrested = "False"
+
             insert_log(
-                stop_date, stop_time, country, driver_gender, driver_age,
-                driver_race, search_conducted, search_type, stop_outcome,
+                stop_date, stop_time, country, gender_label, driver_age,
+                driver_race, search_conducted, search_type, stop_outcome,is_arrested,
                 stop_duration, is_drug_related, violation, vehicle_number
             )
 
             # Generate summary
             summary = (
-                f"A {int(driver_age)}-year-old {driver_gender} driver was stopped for {violation} at {stop_time.strftime('%I:%M %p')}. "
+                f"A {int(driver_age)}-year-old {driver_gender} driver was stopped for {violation} violation at {stop_time.strftime('%I:%M %p')}. "
                 f"{'A search was conducted' if search_conducted == '1' else 'No search was conducted'}, and "
-                f"he received a {stop_outcome.lower()}. The stop lasted {stop_duration} and "
+                f"the stop_outcome for {pronoun} was {stop_outcome.lower()}. The stop lasted {stop_duration} and "
                 f"{'was drug-related' if is_drug_related == '1' else 'was not drug-related'}."
             )
 
